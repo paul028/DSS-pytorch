@@ -1,16 +1,91 @@
 import argparse
 import os
-from dataset import get_loader
+#from dataset import get_loader
 from solver import Solver
 
 
+from own_data_loader import Rescale
+from own_data_loader import RescaleT
+from own_data_loader import RandomCrop
+from own_data_loader import CenterCrop
+from own_data_loader import ToTensor
+from own_data_loader import ToTensorLab
+from own_data_loader import SalObjDataset
+
+data_dir =   './DUTS/'
+tra_image_dir = 'DUTS-TR/DUTS-TR-Image/'
+tra_label_dir = 'DUTS-TR/DUTS-TR-Mask/'
+test_image_dir = 'DUTS-TE/DUTS-TE-Image/'
+test_label_dir = 'DUTS-TE/DUTS-TE-Mask/'
+batch_size_train=8
+batch_size_val=2
+
+image_ext = '.jpg'
+label_ext = '.png'
+
 def main(config):
+	tra_img_name_list = glob.glob(data_dir + tra_image_dir + '*' + image_ext)
+	print("data_dir + tra_image_dir + '*' + image_ext: ", data_dir + tra_image_dir + '*' + image_ext)
+	test_img_name_list = glob.glob(data_dir + test_image_dir + '*' + image_ext)
+	print("data_dir + test_image_dir + '*' + image_ext: ", data_dir + test_image_dir + '*' + image_ext)
+
+	tra_lbl_name_list = []
+	for img_path in tra_img_name_list:
+		img_name = img_path.split("\\")[-1]
+		aaa = img_name.split(".")
+		bbb = aaa[0:-1]
+		imidx = bbb[0]
+		for i in range(1,len(bbb)):
+			imidx = imidx + "." + bbb[i]
+		tra_lbl_name_list.append(data_dir + tra_label_dir + imidx + label_ext)
+
+	test_lbl_name_list = []
+	for img_path in test_img_name_list:
+		img_name = img_path.split("\\")[-1]
+		aaa = img_name.split(".")
+		bbb = aaa[0:-1]
+		imidx = bbb[0]
+		for i in range(1,len(bbb)):
+			imidx = imidx + "." + bbb[i]
+		test_lbl_name_list.append(data_dir + test_label_dir + imidx + label_ext)
+
+	print("---")
+	print("train images: ", len(tra_img_name_list))
+	print("train labels: ", len(tra_lbl_name_list))
+	print("---")
+
+
+	print("---")
+	print("test images: ", len(test_img_name_list))
+	print("test labels: ", len(test_lbl_name_list))
+	print("---")
+
+	train_num = len(tra_img_name_list)
+	test_num = len(test_img_name_list)
+
+	salobj_dataset = SalObjDataset(
+	    img_name_list=tra_img_name_list,
+	    lbl_name_list=tra_lbl_name_list,
+	    transform=transforms.Compose([
+	        RescaleT(256),
+	        RandomCrop(224),
+	        ToTensorLab(flag=0)]),
+			category="train",
+			enableInpaintAug=enableInpaintAug)
+	salobj_dataset_test = SalObjDataset(
+	    img_name_list=test_img_name_list,
+	    lbl_name_list=test_lbl_name_list,
+	    transform=transforms.Compose([
+	        RescaleT(256),
+	        RandomCrop(224),
+	        ToTensorLab(flag=0)]),
+			category="test",
+			enableInpaintAug=enableInpaintAug)
+
     if config.mode == 'train':
-        train_loader = get_loader(config.train_path, config.label_path, config.img_size, config.batch_size,
-                                  filename=config.train_file, num_thread=config.num_thread)
+    	train_loader = DataLoader(salobj_dataset, batch_size=batch_size_train, shuffle=True, num_workers=1)
         if config.val:
-            val_loader = get_loader(config.val_path, config.val_label, config.img_size, config.batch_size,
-                                    filename=config.val_file, num_thread=config.num_thread)
+        	val_loader = DataLoader(salobj_dataset_test, batch_size=batch_size_val, shuffle=True, num_workers=1)
         run = 0
         while os.path.exists("%s/run-%d" % (config.save_fold, run)): run += 1
         os.mkdir("%s/run-%d" % (config.save_fold, run))
@@ -24,8 +99,7 @@ def main(config):
             train = Solver(train_loader, None, None, config)
         train.train()
     elif config.mode == 'test':
-        test_loader = get_loader(config.test_path, config.test_label, config.img_size, config.batch_size, mode='test',
-                                 filename=config.test_file, num_thread=config.num_thread)
+        test_loader = DataLoader(salobj_dataset_test, batch_size=batch_size_val, shuffle=True, num_workers=1)
         if not os.path.exists(config.test_fold): os.mkdir(config.test_fold)
         test = Solver(None, None, test_loader, config)
         test.test(100, use_crf=config.use_crf)
@@ -45,11 +119,7 @@ if __name__ == '__main__':
     # test_path = os.path.join(data_root, 'ECSSD/test_images')
     # test_label = os.path.join(data_root, 'ECSSD/test_ground_truth_mask')
     # # -----MSRA-B dataset-----
-    image_path = os.path.join(data_root, 'MSRA-B/image')
-    label_path = os.path.join(data_root, 'MSRA-B/annotation')
-    train_file = os.path.join(data_root, 'MSRA-B/train_cvpr2013.txt')
-    valid_file = os.path.join(data_root, 'MSRA-B/valid_cvpr2013.txt')
-    test_file = os.path.join(data_root, 'MSRA-B/test_cvpr2013.txt')
+
     parser = argparse.ArgumentParser()
 
     # Hyper-parameters
@@ -61,33 +131,24 @@ if __name__ == '__main__':
 
     # Training settings
     parser.add_argument('--vgg', type=str, default=vgg_path)
-    parser.add_argument('--train_path', type=str, default=image_path)
-    parser.add_argument('--label_path', type=str, default=label_path)
-    parser.add_argument('--train_file', type=str, default=train_file)
     parser.add_argument('--epoch', type=int, default=500)
-    parser.add_argument('--batch_size', type=int, default=1)  # 8
     parser.add_argument('--val', type=bool, default=True)
-    parser.add_argument('--val_path', type=str, default=image_path)
-    parser.add_argument('--val_label', type=str, default=label_path)
-    parser.add_argument('--val_file', type=str, default=valid_file)
+
     parser.add_argument('--num_thread', type=int, default=4)
     parser.add_argument('--load', type=str, default='')
     parser.add_argument('--save_fold', type=str, default='./results')
     parser.add_argument('--epoch_val', type=int, default=10)
-    parser.add_argument('--epoch_save', type=int, default=20)
+    parser.add_argument('--epoch_save', type=int, default=10)
     parser.add_argument('--epoch_show', type=int, default=1)
     parser.add_argument('--pre_trained', type=str, default=None)
 
     # Testing settings
-    parser.add_argument('--test_path', type=str, default=image_path)
-    parser.add_argument('--test_label', type=str, default=label_path)
-    parser.add_argument('--test_file', type=str, default=test_file)
     parser.add_argument('--model', type=str, default='./weights/final.pth')
     parser.add_argument('--test_fold', type=str, default='./results/test')
     parser.add_argument('--use_crf', type=bool, default=False)
 
     # Misc
-    parser.add_argument('--mode', type=str, default='test', choices=['train', 'test'])
+    parser.add_argument('--mode', type=str, default='train', choices=['train', 'test'])
     parser.add_argument('--visdom', type=bool, default=False)
 
     config = parser.parse_args()
