@@ -162,8 +162,8 @@ class Solver(object):
                     avg_err = OrderedDict([('avg_loss', loss_epoch / iter_num)])
                     self.visual.plot_current_errors(epoch, i / iter_num, avg_err, 1)
                     y_show = torch.mean(torch.cat([y_pred[i] for i in self.select], dim=1), dim=1, keepdim=True)
-                    img = OrderedDict([('origin', x.cpu()[0] * self.std + self.mean), ('label', y.cpu()[0][0]),
-                                       ('pred_label', y_show.cpu().data[0][0])])
+                    img = OrderedDict([('origin'+str(epoch), x.cpu()[0] * self.std + self.mean), ('label'+str(epoch), y.cpu()[0][0]),
+                                       ('pred_label'+str(epoch), y_show.cpu().data[0][0])])
                     self.visual.plot_current_img(img)
             if self.config.val and (epoch + 1) % self.config.epoch_val == 0:
                 mae = self.validation()
