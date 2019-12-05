@@ -89,6 +89,8 @@ class Solver(object):
             for i, data_batch in enumerate(self.val_loader):
                 #images, labels = data_batch
                 images,labels = data_batch['image'], data_batch['label']
+                images = images.type(torch.cuda. FloatTensor)
+                labels= labels.type(torch.cuda.FloatTensor)
                 images, labels = images.to(self.device), labels.to(self.device)
                 prob_pred = self.net(images)
                 prob_pred = torch.mean(torch.cat([prob_pred[i] for i in self.select], dim=1), dim=1, keepdim=True)
