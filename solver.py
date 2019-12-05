@@ -8,7 +8,7 @@ from torchvision import transforms
 from dssnet import build_model, weights_init
 from loss import Loss
 from tools.visual import Viz_visdom
-
+from torch.autograd import Variable
 
 class Solver(object):
     def __init__(self, train_loader, val_loader, test_dataset, config):
@@ -87,7 +87,8 @@ class Solver(object):
         self.net.eval()
         with torch.no_grad():
             for i, data_batch in enumerate(self.val_loader):
-                images, labels = data_batch
+                #images, labels = data_batch
+                images,labels = data_batch['image'], data_batch['label']
                 images, labels = images.to(self.device), labels.to(self.device)
                 prob_pred = self.net(images)
                 prob_pred = torch.mean(torch.cat([prob_pred[i] for i in self.select], dim=1), dim=1, keepdim=True)
@@ -101,12 +102,14 @@ class Solver(object):
         avg_mae, img_num = 0.0, len(self.test_dataset)
         avg_prec, avg_recall = torch.zeros(num), torch.zeros(num)
         with torch.no_grad():
-            for i, (img, labels) in enumerate(self.test_dataset):
-                images = self.transform(img).unsqueeze(0)
-                labels = labels.unsqueeze(0)
+            for i,data in enumerate(self.test_dataset): #(img, labels) in enumerate(self.test_dataset):
+                images,labels = data['image'], data['label']
+                #images = self.transform(img).unsqueeze(0)
+                #labels = labels.unsqueeze(0)
                 shape = labels.size()[2:]
                 images = images.to(self.device)
                 prob_pred = self.net(images)
+
                 prob_pred = torch.mean(torch.cat([prob_pred[i] for i in self.select], dim=1), dim=1, keepdim=True)
                 prob_pred = F.interpolate(prob_pred, size=shape, mode='bilinear', align_corners=True).cpu().data
                 if use_crf:
@@ -130,10 +133,13 @@ class Solver(object):
         for epoch in range(self.config.epoch):
             loss_epoch = 0
             for i, data_batch in enumerate(self.train_loader):
+                x, y = data_batch['image'], data_batch['label']
+                x = x.type(torch.cuda. FloatTensor)
+                y= y.type(torch.cuda.FloatTensor)
+                x,y = Variable(x.to(self.device), requires_grad=False), Variable(y.to(self.device), requires_grad=False)
+                #x, y = x.to(self.device), y.to(self.device)
                 if (i + 1) > iter_num: break
                 self.net.zero_grad()
-                x, y = data_batch
-                x, y = x.to(self.device), y.to(self.device)
                 y_pred = self.net(x)
                 loss = self.loss(y_pred, y)
                 loss.backward()
