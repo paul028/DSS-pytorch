@@ -161,14 +161,20 @@ class Solver(object):
                 if self.config.visdom:
                     avg_err = OrderedDict([('avg_loss', loss_epoch / iter_num)])
                     self.visual.plot_current_errors(epoch, i / iter_num, avg_err, 1)
-                    y_show = torch.mean(torch.cat([y_pred[i] for i in self.select], dim=1), dim=1, keepdim=True)
-                    img = OrderedDict([('origin'+str(epoch), x.cpu()[0] * self.std + self.mean), ('label'+str(epoch), y.cpu()[0][0]),
-                                       ('pred_label'+str(epoch), y_show.cpu().data[0][0])])
-                    self.visual.plot_current_img(img)
+                    for i in self.select:
+                        #y_show = torch.mean(torch.cat([y_pred[i] for i in self.select], dim=1), dim=1, keepdim=True)
+                        img = OrderedDict([('origin'+str(epoch), x.cpu()[0] * self.std + self.mean), ('label'+str(epoch), y.cpu()[0][0]),
+                                           ('pred_label'+str(epoch), y_pred[i].cpu().data[0][0])])
+                        self.visual.plot_current_img(img)
+#this shows the mean prediction of the 5 output layers.
+
             if self.config.val and (epoch + 1) % self.config.epoch_val == 0:
                 mae = self.validation()
                 print('--- Best MAE: %.2f, Curr MAE: %.2f ---' % (best_mae, mae))
                 print('--- Best MAE: %.2f, Curr MAE: %.2f ---' % (best_mae, mae), file=self.log_output)
+                if self.config.visdom:
+                    error = OrderedDict([('MAE:', mae])
+                    self.visual.plot_evaluation(epoch, i / iter_num, error)
                 if best_mae > mae:
                     best_mae = mae
                     torch.save(self.net.state_dict(), '%s/models/best.pth' % self.config.save_fold)
