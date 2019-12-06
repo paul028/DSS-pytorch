@@ -26,7 +26,7 @@ class Solver(object):
             cudnn.benchmark = True
             self.device = torch.device('cuda:0')
         if config.visdom:
-            self.visual = Viz_visdom("DSS", 1)
+            self.visual = Viz_visdom("DSS 12-6-19", 1)
         self.build_model()
         if self.config.pre_trained: self.net.load_state_dict(torch.load(self.config.pre_trained))
         if config.mode == 'train':
@@ -164,8 +164,8 @@ class Solver(object):
                     self.visual.plot_current_errors(epoch, i / iter_num, avg_err, 1)
                     for i in self.select:
                         #y_show = torch.mean(torch.cat([y_pred[i] for i in self.select], dim=1), dim=1, keepdim=True)
-                        img = OrderedDict([('origin'+str(epoch), x.cpu()[0] * self.std + self.mean), ('label'+str(epoch), y.cpu()[0][0]),
-                                           ('pred_label'+str(epoch), y_pred[i].cpu().data[0][0])])
+                        img = OrderedDict([('origin'+str(epoch)+str(i), x.cpu()[0] * self.std + self.mean), ('label'+str(epoch)+str(i), y.cpu()[0][0]),
+                                           ('pred_label'+str(epoch)+str(i), y_pred[i].cpu().data[0][0])])
                         self.visual.plot_current_img(img)
 #this shows the mean prediction of the 5 output layers.
 
@@ -174,7 +174,7 @@ class Solver(object):
                 print('--- Best MAE: %.2f, Curr MAE: %.2f ---' % (best_mae, mae))
                 print('--- Best MAE: %.2f, Curr MAE: %.2f ---' % (best_mae, mae), file=self.log_output)
                 if self.config.visdom:
-                    error = OrderedDict([('MAE:', mae])
+                    error = OrderedDict([('MAE:', mae)])
                     self.visual.plot_evaluation(epoch, i / iter_num, error)
                 if best_mae > mae:
                     best_mae = mae
