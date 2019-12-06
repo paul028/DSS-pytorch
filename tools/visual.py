@@ -33,6 +33,26 @@ class Viz_visdom(object):
         if self.idx < self.display_id + idx:
             self.idx = self.display_id + idx
 
+    def plot_evaluation(self, epoch, counter_ratio, errors, idx=0):
+
+        if idx not in self.plot_data:
+            self.plot_data[idx] = {'X': [], 'Y': [], 'legend': list(errors.keys())}
+        # self.plot_data = {'X': [], 'Y': [], 'legend': list(errors.keys())}
+        self.plot_data[idx]['X'].append(epoch + counter_ratio)
+        self.plot_data[idx]['Y'].append([errors[k] for k in self.plot_data[idx]['legend']])
+        self.vis.line(
+            X=np.stack([np.array(self.plot_data[idx]['X'])] * len(self.plot_data[idx]['legend']), 1)
+            if len(errors) > 1 else np.array(self.plot_data[idx]['X']),
+            Y=np.array(self.plot_data[idx]['Y']) if len(errors) > 1 else np.array(self.plot_data[idx]['Y'])[:, 0],
+            opts={
+                'title': self.name + ' loss over time %d' % idx,
+                'legend': self.plot_data[idx]['legend'],
+                'xlabel': 'epoch',
+                'ylabel': 'Error'},
+            win=self.display_id + idx)
+        if self.idx < self.display_id + idx:
+            self.idx = self.display_id + idx
+
     def plot_current_img(self, visuals, c_prev=True):
         idx = self.idx + 1
         for label, image_numpy in visuals.items():
