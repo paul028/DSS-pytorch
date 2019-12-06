@@ -45,7 +45,7 @@ class Viz_visdom(object):
             if len(errors) > 1 else np.array(self.plot_data[idx]['X']),
             Y=np.array(self.plot_data[idx]['Y']) if len(errors) > 1 else np.array(self.plot_data[idx]['Y'])[:, 0],
             opts={
-                'title': self.name + ' loss over time %d' % idx,
+                'title': 'MAE Graph',
                 'legend': self.plot_data[idx]['legend'],
                 'xlabel': 'epoch',
                 'ylabel': 'Error'},
