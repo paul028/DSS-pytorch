@@ -95,6 +95,7 @@ class Solver(object):
                 prob_pred = self.net(images)
                 prob_pred = torch.mean(torch.cat([prob_pred[i] for i in self.select], dim=1), dim=1, keepdim=True)
                 avg_mae += self.eval_mae(prob_pred, labels).item()
+                print("Average Mae"+str(avg_mae))
         self.net.train()
         return avg_mae / len(self.val_loader)
 
