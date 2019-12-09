@@ -15,7 +15,7 @@ from own_dataloader import ToTensor
 from own_dataloader import ToTensorLab
 from own_dataloader import SalObjDataset
 
-data_dir =   'C:/Users/tip/Documents/GitHub/DUTS/'
+data_dir =   'C:/Users/paulvincentnonat/Documents/GitHub/Saliency_Dataset/DUTS/'
 tra_image_dir = 'DUTS-TR/DUTS-TR-Image/'
 tra_label_dir = 'DUTS-TR/DUTS-TR-Mask/'
 test_image_dir = 'DUTS-TE/DUTS-TE-Image/'
@@ -130,7 +130,7 @@ if __name__ == '__main__':
     parser.add_argument('--img_size', type=int, default=256)  # 256
     parser.add_argument('--lr', type=float, default=1e-6)
     parser.add_argument('--clip_gradient', type=float, default=1.0)
-    parser.add_argument('--cuda', type=bool, default=True)
+    parser.add_argument('--cuda', type=bool, default=False)
 
     # Training settings
     parser.add_argument('--vgg', type=str, default=vgg_path)

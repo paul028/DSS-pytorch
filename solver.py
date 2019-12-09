@@ -7,9 +7,9 @@ from torch.backends import cudnn
 from torchvision import transforms
 from dssnet import build_model, weights_init
 from loss import Loss
-from tools.visual import Viz_visdom
+from tools.visual import Viz_visdom,plot_image, make_simple_grid
 from torch.autograd import Variable
-
+from torchvision.utils import save_image
 class Solver(object):
     def __init__(self, train_loader, val_loader, test_dataset, config):
         self.train_loader = train_loader
@@ -107,14 +107,21 @@ class Solver(object):
         with torch.no_grad():
             for i,data in enumerate(self.test_dataset): #(img, labels) in enumerate(self.test_dataset):
                 images,labels = data['image'], data['label']
+                images = images.type(torch.cuda. FloatTensor)
+                labels= labels.type(torch.cuda.FloatTensor)
                 #images = self.transform(img).unsqueeze(0)
                 #labels = labels.unsqueeze(0)
                 shape = labels.size()[2:]
+                #print(shape)
                 images = images.to(self.device)
+                labels=labels.to(self.device)
                 prob_pred = self.net(images)
 
                 prob_pred = torch.mean(torch.cat([prob_pred[i] for i in self.select], dim=1), dim=1, keepdim=True)
                 prob_pred = F.interpolate(prob_pred, size=shape, mode='bilinear', align_corners=True).cpu().data
+                print(prob_pred[0].size())
+                result_dir='C:/Users/paulvincentnonat/Documents/GitHub/PoolNet_Result/'
+                save_image(prob_pred[0],result_dir+'result'+str(i)+'.png')
                 if use_crf:
                     prob_pred = crf(img, prob_pred.numpy(), to_tensor=True)
                 mae = self.eval_mae(prob_pred, labels)
