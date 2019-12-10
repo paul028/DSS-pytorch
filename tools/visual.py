@@ -9,11 +9,12 @@ class Viz_visdom(object):
         self.display_id = display_id
         self.idx = display_id
         self.plot_data = {}
+        self.display_image={}
         if display_id > 0:
             import visdom
             self.vis = visdom.Visdom(port=8097)
 
-    def plot_current_errors(title,self, epoch, counter_ratio, errors, idx=0):
+    def plot_current_errors(self, epoch, counter_ratio, errors, idx=0,title=" "):
 
         if idx not in self.plot_data:
             self.plot_data[idx] = {'X': [], 'Y': [], 'legend': list(errors.keys())}
@@ -33,25 +34,6 @@ class Viz_visdom(object):
         if self.idx < self.display_id + idx:
             self.idx = self.display_id + idx
 
-    def plot_evaluation(self, epoch, counter_ratio, errors, idx=0):
-
-        if idx not in self.plot_data:
-            self.plot_data[idx] = {'X': [], 'Y': [], 'legend': list(errors.keys())}
-        # self.plot_data = {'X': [], 'Y': [], 'legend': list(errors.keys())}
-        self.plot_data[idx]['X'].append(epoch + counter_ratio)
-        self.plot_data[idx]['Y'].append([errors[k] for k in self.plot_data[idx]['legend']])
-        self.vis.line(
-            X=np.stack([np.array(self.plot_data[idx]['X'])] * len(self.plot_data[idx]['legend']), 1)
-            if len(errors) > 1 else np.array(self.plot_data[idx]['X']),
-            Y=np.array(self.plot_data[idx]['Y']) if len(errors) > 1 else np.array(self.plot_data[idx]['Y'])[:, 0],
-            opts={
-                'title': 'MAE Graph',
-                'legend': self.plot_data[idx]['legend'],
-                'xlabel': 'epoch',
-                'ylabel': 'Error'},
-            win=self.display_id + idx)
-        if self.idx < self.display_id + idx:
-            self.idx = self.display_id + idx
 
     def plot_current_img(self, visuals, c_prev=True):
         idx = self.idx + 1

@@ -163,14 +163,14 @@ class Solver(object):
                     epoch, self.config.epoch, i, iter_num, loss.item()))
                 if self.config.visdom:
                     error = OrderedDict([('loss:', loss.item())])
-                    self.visual.plot_current_errors('Cross Entropy Loss',epoch, i / iter_num, error)
+                    self.visual.plot_current_errors(epoch, i / iter_num, error,0,'Cross Entropy Loss')
 
             if (epoch + 1) % self.config.epoch_show == 0:
                 print('epoch: [%d/%d], epoch_loss: [%.4f]' % (epoch, self.config.epoch, loss_epoch / iter_num),
                       file=self.log_output)
                 if self.config.visdom:
                     avg_err = OrderedDict([('avg_loss', loss_epoch / iter_num)])
-                    self.visual.plot_current_errors('Average Loss per Epoch',epoch, i / iter_num, avg_err, 1)
+                    self.visual.plot_current_errors(epoch, i / iter_num, avg_err, 1,'Average Loss per Epoch')
                     for i in self.select:
                         y_show = torch.mean(torch.cat([y_pred[i] for i in self.select], dim=1), dim=1, keepdim=True)
                         img = OrderedDict([('origin'+str(epoch)+str(i), x.cpu()[0] * self.std + self.mean), ('label'+str(epoch)+str(i), y.cpu()[0][0]),
@@ -187,16 +187,16 @@ class Solver(object):
                 print('--- Best MAE: %.2f, Curr MAE: %.2f ---' % (best_mae, mae), file=self.log_output)
                 if self.config.visdom:
                     error = OrderedDict([('MAE:', mae)])
-                    self.visual.plot_current_errors('Mean Absolute Error Graph',epoch, i / iter_num, error, 2)
+                    self.visual.plot_current_errors(epoch, i / iter_num, error, 2,'Mean Absolute Error Graph')
 
                     prec_graph = OrderedDict([('Precission:', prec)])
-                    self.visual.plot_current_errors('Precission Graph',epoch, i / iter_num, prec_graph, 3)
+                    self.visual.plot_current_errors(epoch, i / iter_num, prec_graph, 3,'Precission Graph')
 
                     recall_graph = OrderedDict([('Recall:', recall)])
-                    self.visual.plot_current_errors('Recall Graph',epoch, i / iter_num, recall_graph, 4)
+                    self.visual.plot_current_errors(epoch, i / iter_num, recall_graph, 4,'Recall Graph')
 
                     fscore_graph = OrderedDict([('F-Measure:', score)])
-                    self.visual.plot_current_errors('F-Measure Graph',epoch, i / iter_num, fscore_graph, 5)
+                    self.visual.plot_current_errors(epoch, i / iter_num, fscore_graph, 5,'F-Measure Graph')
                 if best_mae > mae:
                     best_mae = mae
                     torch.save(self.net.state_dict(), '%s/models/best.pth' % self.config.save_fold)

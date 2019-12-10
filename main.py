@@ -100,7 +100,7 @@ def main(config):
             train = Solver(train_loader, val_loader, None, config)
         else:
             train = Solver(train_loader, None, None, config)
-        train.train()
+        train.train(100)
     elif config.mode == 'test':
         test_loader = DataLoader(salobj_dataset_test, batch_size=batch_size_val, shuffle=True, num_workers=1)
         if not os.path.exists(config.test_fold): os.mkdir(config.test_fold)
@@ -154,8 +154,7 @@ if __name__ == '__main__':
 
     # Misc
     parser.add_argument('--mode', type=str, default='train', choices=['train', 'test'])
-    parser.add_argument('--visdom', type=bool, default=True)
-
+    parser.add_argument('--visdom', type=bool, default=False)
     config = parser.parse_args()
     if not os.path.exists(config.save_fold): os.mkdir(config.save_fold)
     main(config)
