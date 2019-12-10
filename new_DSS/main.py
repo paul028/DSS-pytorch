@@ -15,7 +15,7 @@ from own_dataloader import ToTensor
 from own_dataloader import ToTensorLab
 from own_dataloader import SalObjDataset
 
-data_dir =   'C:/Users/paulvincentnonat/Documents/GitHub/Saliency_Dataset/DUTS/'
+data_dir =   'C:/Users/Paul Vincent Nonat/Documents/Graduate Student Files/Saliency_Dataset/DUTS/'
 tra_image_dir = 'DUTS-TR/DUTS-TR-Image/'
 tra_label_dir = 'DUTS-TR/DUTS-TR-Mask/'
 test_image_dir = 'DUTS-TE/DUTS-TE-Image/'
@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
     # Misc
     parser.add_argument('--mode', type=str, default='train', choices=['train', 'test'])
-    parser.add_argument('--visdom', type=bool, default=True)
+    parser.add_argument('--visdom', type=bool, default=False)
 
     config = parser.parse_args()
     if not os.path.exists(config.save_fold): os.mkdir(config.save_fold)
