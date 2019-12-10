@@ -10,6 +10,7 @@ from loss import Loss
 from tools.visual import Viz_visdom,plot_image, make_simple_grid
 from torch.autograd import Variable
 from torchvision.utils import save_image
+
 class Solver(object):
     def __init__(self, train_loader, val_loader, test_dataset, config):
         self.train_loader = train_loader
@@ -120,12 +121,13 @@ class Solver(object):
                 prob_pred = torch.mean(torch.cat([prob_pred[i] for i in self.select], dim=1), dim=1, keepdim=True)
                 prob_pred = F.interpolate(prob_pred, size=shape, mode='bilinear', align_corners=True).cpu().data
                 print(prob_pred[0].size())
-                result_dir='C:/Users/paulvincentnonat/Documents/GitHub/PoolNet_Result/'
+                result_dir='C:/Users/Paul Vincent Nonat/Documents/Graduate Student Files/results/'
                 save_image(prob_pred[0],result_dir+'result'+str(i)+'.png')
                 if use_crf:
                     prob_pred = crf(img, prob_pred.numpy(), to_tensor=True)
                 mae = self.eval_mae(prob_pred, labels)
                 prec, recall = self.eval_pr(prob_pred, labels, num)
+                print(num)
                 print("[%d] mae: %.4f" % (i, mae))
                 print("[%d] mae: %.4f" % (i, mae), file=self.test_output)
                 avg_mae += mae
@@ -137,7 +139,7 @@ class Solver(object):
         print('average mae: %.4f, max fmeasure: %.4f' % (avg_mae, score.max()), file=self.test_output)
 
     # training phase
-    def train(self):
+    def train(self,num):
         iter_num = len(self.train_loader.dataset) // self.config.batch_size
         best_mae = 1.0 if self.config.val else None
         for epoch in range(self.config.epoch):
@@ -178,11 +180,23 @@ class Solver(object):
 
             if self.config.val and (epoch + 1) % self.config.epoch_val == 0:
                 mae = self.validation()
+                prec, recall = self.eval_pr(prob_pred, labels, num)
+                score = (1 + self.beta ** 2) * prec * recall / (self.beta ** 2 * prec + recall)
+                score[score != score] = 0  # delete the nan
                 print('--- Best MAE: %.2f, Curr MAE: %.2f ---' % (best_mae, mae))
                 print('--- Best MAE: %.2f, Curr MAE: %.2f ---' % (best_mae, mae), file=self.log_output)
                 if self.config.visdom:
                     error = OrderedDict([('MAE:', mae)])
-                    self.visual.plot_evaluation(epoch, i / iter_num, error)
+                    self.visual.plot_current_errors('Mean Absolute Error Graph',epoch, i / iter_num, error, 2)
+
+                    prec_graph = OrderedDict([('Precission:', prec)])
+                    self.visual.plot_current_errors('Precission Graph',epoch, i / iter_num, prec_graph, 3)
+
+                    recall_graph = OrderedDict([('Recall:', recall)])
+                    self.visual.plot_current_errors('Recall Graph',epoch, i / iter_num, recall_graph, 4)
+
+                    fscore_graph = OrderedDict([('F-Measure:', score)])
+                    self.visual.plot_current_errors('F-Measure Graph',epoch, i / iter_num, fscore_graph, 5)
                 if best_mae > mae:
                     best_mae = mae
                     torch.save(self.net.state_dict(), '%s/models/best.pth' % self.config.save_fold)
