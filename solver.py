@@ -85,6 +85,8 @@ class Solver(object):
     # validation: using resize image, and only evaluate the MAE metric
     def validation(self):
         avg_mae = 0.0
+        prec=0.0
+        recall=0.0
         self.net.eval()
         with torch.no_grad():
             for i, data_batch in enumerate(self.val_loader):
@@ -97,6 +99,8 @@ class Solver(object):
                 prob_pred = torch.mean(torch.cat([prob_pred[i] for i in self.select], dim=1), dim=1, keepdim=True)
                 avg_mae += self.eval_mae(prob_pred, labels).item()
                 print("Average Mae"+str(avg_mae))
+
+
         self.net.train()
         return avg_mae / len(self.val_loader)
 
@@ -179,24 +183,13 @@ class Solver(object):
 #this shows the mean prediction of the 5 output layers.
 
             if self.config.val and (epoch + 1) % self.config.epoch_val == 0:
-                mae = self.validation()
-                prec, recall = self.eval_pr(prob_pred, labels, num)
-                score = (1 + self.beta ** 2) * prec * recall / (self.beta ** 2 * prec + recall)
-                score[score != score] = 0  # delete the nan
+                mae= self.validation()
                 print('--- Best MAE: %.2f, Curr MAE: %.2f ---' % (best_mae, mae))
                 print('--- Best MAE: %.2f, Curr MAE: %.2f ---' % (best_mae, mae), file=self.log_output)
                 if self.config.visdom:
                     error = OrderedDict([('MAE:', mae)])
                     self.visual.plot_current_errors(epoch, i / iter_num, error, 2,'Mean Absolute Error Graph')
 
-                    prec_graph = OrderedDict([('Precission:', prec)])
-                    self.visual.plot_current_errors(epoch, i / iter_num, prec_graph, 3,'Precission Graph')
-
-                    recall_graph = OrderedDict([('Recall:', recall)])
-                    self.visual.plot_current_errors(epoch, i / iter_num, recall_graph, 4,'Recall Graph')
-
-                    fscore_graph = OrderedDict([('F-Measure:', score)])
-                    self.visual.plot_current_errors(epoch, i / iter_num, fscore_graph, 5,'F-Measure Graph')
                 if best_mae > mae:
                     best_mae = mae
                     torch.save(self.net.state_dict(), '%s/models/best.pth' % self.config.save_fold)
