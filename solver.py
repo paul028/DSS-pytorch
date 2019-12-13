@@ -125,8 +125,10 @@ class Solver(object):
                 prob_pred = torch.mean(torch.cat([prob_pred[i] for i in self.select], dim=1), dim=1, keepdim=True)
                 prob_pred = F.interpolate(prob_pred, size=shape, mode='bilinear', align_corners=True).cpu().data
                 print(prob_pred[0].size())
-                result_dir='C:/Users/Paul Vincent Nonat/Documents/Graduate Student Files/results/'
+                result_dir='C:/Users/Paul Vincent Nonat/Documents/Graduate Student Files/Pascal Predicted Maps/'
+                plot_image(prob_pred[0], (224/30, 224/30), 'results')
                 save_image(prob_pred[0],result_dir+'result'+str(i)+'.png')
+
                 if use_crf:
                     prob_pred = crf(img, prob_pred.numpy(), to_tensor=True)
                 mae = self.eval_mae(prob_pred, labels)
