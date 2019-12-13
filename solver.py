@@ -167,7 +167,16 @@ class Solver(object):
 
                 #loss = self.loss(y_pred, y)
                 #implements IOU loss function
-                loss = iou_loss(y_pred,y)
+                loss_0 = iou_loss(y_pred[1],y)
+                loss_1 = iou_loss(y_pred[2],y)
+                loss_2 = iou_loss(y_pred[3],y)
+                loss_3 = iou_loss(y_pred[6],y)
+                print(loss_0)#IOU LOSS
+                print(loss_1)
+                print(loss_2)
+                print(loss_3)
+
+                loss=(loss_0+loss_1+loss_2+loss_3)/4
                 loss.backward()
                 utils.clip_grad_norm_(self.net.parameters(), self.config.clip_gradient)
                 # utils.clip_grad_norm(self.loss.parameters(), self.config.clip_gradient)
@@ -177,7 +186,8 @@ class Solver(object):
                     epoch, self.config.epoch, i, iter_num, loss.item()))
                 if self.config.visdom:
                     error = OrderedDict([('loss:', loss.item())])
-                    self.visual.plot_current_errors(epoch, i / iter_num, error,0,'Cross Entropy Loss')
+                    #self.visual.plot_current_errors(epoch, i / iter_num, error,0,'Cross Entropy Loss')
+                    self.visual.plot_current_errors(epoch, i / iter_num, error,0,'IoU Loss')
 
             if (epoch + 1) % self.config.epoch_show == 0:
                 print('epoch: [%d/%d], epoch_loss: [%.4f]' % (epoch, self.config.epoch, loss_epoch / iter_num),

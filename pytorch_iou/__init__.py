@@ -5,13 +5,10 @@ import numpy as np
 
 def _iou(pred, target, size_average = True):
 
-    b = torch.cat(pred).shape[0]
-    #target = torch.cat(targets)
-    print(pred[1])
+    b = pred.shape[0]
     IoU = 0.0
     for i in range(0,b):
         #compute the IoU of the foreground
-
         Iand1 = torch.sum(target[i,:,:,:]*pred[i,:,:,:])
         Ior1 = torch.sum(target[i,:,:,:]) + torch.sum(pred[i,:,:,:])-Iand1
         IoU1 = Iand1/Ior1
