@@ -11,6 +11,13 @@ from tools.visual import Viz_visdom,plot_image, make_simple_grid
 from torch.autograd import Variable
 from torchvision.utils import save_image
 
+
+import pytorch_ssim
+import pytorch_iou
+
+ssim_loss = pytorch_ssim.SSIM(window_size=11,size_average=True)
+iou_loss = pytorch_iou.IOU(size_average=True)
+
 class Solver(object):
     def __init__(self, train_loader, val_loader, test_dataset, config):
         self.train_loader = train_loader
@@ -159,7 +166,10 @@ class Solver(object):
                 if (i + 1) > iter_num: break
                 self.net.zero_grad()
                 y_pred = self.net(x)
-                loss = self.loss(y_pred, y)
+
+                #loss = self.loss(y_pred, y)
+                #implements IOU loss function
+                loss = iou_loss(y_pred,y)
                 loss.backward()
                 utils.clip_grad_norm_(self.net.parameters(), self.config.clip_gradient)
                 # utils.clip_grad_norm(self.loss.parameters(), self.config.clip_gradient)
