@@ -133,9 +133,7 @@ class Solver(object):
 
                 prob_pred = torch.mean(torch.cat([prob_pred[i] for i in self.select], dim=1), dim=1, keepdim=True)
                 prob_pred = F.interpolate(prob_pred, size=shape, mode='bilinear', align_corners=True).cpu().data
-                print(prob_pred[0].size())
                 ratio = 160/224*7
-                print(images[0][0].size())
                 #plot_result.append(images[0])
                 #plot_result.append(labels[0])
                 result_dir='C:/Users/Paul Vincent Nonat/Documents/Graduate Student Files/Pascal Predicted Maps/'
