@@ -11,6 +11,8 @@ from tools.visual import Viz_visdom,plot_image, make_simple_grid
 from torch.autograd import Variable
 from torchvision.utils import save_image
 
+import sys
+from PIL import Image
 
 import pytorch_ssim
 import pytorch_iou
@@ -67,7 +69,7 @@ class Solver(object):
         if self.config.load == '': self.net.base.load_state_dict(torch.load(self.config.vgg))
         if self.config.load != '': self.net.load_state_dict(torch.load(self.config.load))
         self.optimizer = Adam(self.net.parameters(), self.config.lr)
-        self.print_network(self.net, 'DSS')
+        #self.print_network(self.net, 'DSS')
 
     # update the learning rate
     def update_lr(self, lr):
@@ -132,9 +134,16 @@ class Solver(object):
                 prob_pred = torch.mean(torch.cat([prob_pred[i] for i in self.select], dim=1), dim=1, keepdim=True)
                 prob_pred = F.interpolate(prob_pred, size=shape, mode='bilinear', align_corners=True).cpu().data
                 print(prob_pred[0].size())
+                ratio = 160/224*7
+                print(images[0][0].size())
+                #plot_result.append(images[0])
+                #plot_result.append(labels[0])
                 result_dir='C:/Users/Paul Vincent Nonat/Documents/Graduate Student Files/Pascal Predicted Maps/'
-                plot_image(prob_pred[0], (224/30, 224/30), 'results')
-                save_image(prob_pred[0],result_dir+'result'+str(i)+'.png')
+                plot_image(images[0], (224/60, 224/60), 'Input Image',True)
+                plot_image(labels[0], (224/60, 224/60), 'Ground Truth')
+                plot_image(prob_pred[0], (224/60, 224/60), 'Predicted Map')
+
+                save_image(prob_pred,result_dir+'result'+str(i)+'.png')
 
                 if use_crf:
                     prob_pred = crf(img, prob_pred.numpy(), to_tensor=True)
