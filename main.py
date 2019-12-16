@@ -16,8 +16,8 @@ from own_dataloader import ToTensorLab
 from own_dataloader import SalObjDataset
 
 data_dir =   'C:/Users/paulvincentnonat/Documents/GitHub/Saliency_Dataset/DUTS/'
-tra_image_dir = 'DUTS-TR/DUTS-TR-Image/'
-tra_label_dir = 'DUTS-TR/DUTS-TR-Mask/'
+#tra_image_dir = 'DUTS-TR/DUTS-TR-Image/'
+#tra_label_dir = 'DUTS-TR/DUTS-TR-Mask/'
 test_image_dir = 'DUTS-TE/DUTS-TE-Image/'
 test_label_dir = 'DUTS-TE/DUTS-TE-Mask/'
 enableInpaintAug = False
@@ -26,23 +26,57 @@ batch_size_val=4
 
 image_ext = '.jpg'
 label_ext = '.png'
-output_path='C:/Users/paulvincentnonat/Documents/GitHub/Experiment 1 DUTS Saliency Map/'
+
+vgg_path = 'C:/Users/paulvincentnonat/Documents/GitHub/weights/vgg16_feat.pth'
+trained_model='C:/Users/paulvincentnonat/Documents/GitHub/weights/Experiment1.pth'
+
+
+test_folder='D:/nonat project/Experiment 1.2/weights/test/DUTS TEST'
+#test_folder='D:/nonat project/Experiment 1.2/weights/test/DUTOMRON TEST'
+#test_folder='D:/nonat project/Experiment 1.2/weights/test/ECCSD TEST'
+#test_folder='D:/nonat project/Experiment 1.2/weights/test/HKU-IS TEST'
+#test_folder='D:/nonat project/Experiment 1.2/weights/test/PASCAL TEST'
+#test_folder='D:/nonat project/Experiment 1.2/weights/test/SOD TEST'
+
+output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/DUTS OMRON Saliency Map Prediction'
+#output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/DUTS Saliency Map Prediction'
+#output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/ECCSD Saliency Map Prediction'
+#output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/HKU-IS Saliency Map Prediction'
+#output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/PASCAL Saliency Map Prediction'
+#output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/SOD Saliency Map Prediction'
 def main(config):
-    tra_img_name_list = glob.glob(data_dir + tra_image_dir + '*' + image_ext)
-    print("data_dir + tra_image_dir + '*' + image_ext: ", data_dir + tra_image_dir + '*' + image_ext)
+
+    if config.mode == 'train':
+        tra_img_name_list = glob.glob(data_dir + tra_image_dir + '*' + image_ext)
+        print("data_dir + tra_image_dir + '*' + image_ext: ", data_dir + tra_image_dir + '*' + image_ext)
+
+        tra_lbl_name_list = []
+        for img_path in tra_img_name_list:
+        	img_name = img_path.split("\\")[-1]
+        	aaa = img_name.split(".")
+        	bbb = aaa[0:-1]
+        	imidx = bbb[0]
+        	for i in range(1,len(bbb)):
+        		imidx = imidx + "." + bbb[i]
+        	tra_lbl_name_list.append(data_dir + tra_label_dir + imidx + label_ext)
+
+            print("---")
+            print("train images: ", len(tra_img_name_list))
+            print("train labels: ", len(tra_lbl_name_list))
+            print("---")
+            train_num = len(tra_img_name_list)
+            salobj_dataset = SalObjDataset(
+                img_name_list=tra_img_name_list,
+                lbl_name_list=tra_lbl_name_list,
+                transform=transforms.Compose([
+                    RescaleT(256),
+                    RandomCrop(224),
+                    ToTensorLab(flag=0)]),
+            		category="train",
+            		enableInpaintAug=enableInpaintAug)
+
     test_img_name_list = glob.glob(data_dir + test_image_dir + '*' + image_ext)
     print("data_dir + test_image_dir + '*' + image_ext: ", data_dir + test_image_dir + '*' + image_ext)
-
-    tra_lbl_name_list = []
-    for img_path in tra_img_name_list:
-    	img_name = img_path.split("\\")[-1]
-    	aaa = img_name.split(".")
-    	bbb = aaa[0:-1]
-    	imidx = bbb[0]
-    	for i in range(1,len(bbb)):
-    		imidx = imidx + "." + bbb[i]
-    	tra_lbl_name_list.append(data_dir + tra_label_dir + imidx + label_ext)
-
     test_lbl_name_list = []
     for img_path in test_img_name_list:
     	img_name = img_path.split("\\")[-1]
@@ -54,28 +88,11 @@ def main(config):
     	test_lbl_name_list.append(data_dir + test_label_dir + imidx + label_ext)
 
     print("---")
-    print("train images: ", len(tra_img_name_list))
-    print("train labels: ", len(tra_lbl_name_list))
-    print("---")
-
-
-    print("---")
     print("test images: ", len(test_img_name_list))
     print("test labels: ", len(test_lbl_name_list))
     print("---")
 
-    train_num = len(tra_img_name_list)
     test_num = len(test_img_name_list)
-
-    salobj_dataset = SalObjDataset(
-        img_name_list=tra_img_name_list,
-        lbl_name_list=tra_lbl_name_list,
-        transform=transforms.Compose([
-            RescaleT(256),
-            RandomCrop(224),
-            ToTensorLab(flag=0)]),
-    		category="train",
-    		enableInpaintAug=enableInpaintAug)
     salobj_dataset_test = SalObjDataset(
         img_name_list=test_img_name_list,
         lbl_name_list=test_lbl_name_list,
@@ -112,18 +129,6 @@ def main(config):
 
 if __name__ == '__main__':
     data_root = os.path.join(os.path.expanduser('~'), 'data')
-    vgg_path = 'C:/Users/paulvincentnonat/Documents/GitHub/weights/vgg16_feat.pth'
-    trained_model='C:/Users/paulvincentnonat/Documents/GitHub/weights/Experiment1.pth'
-    test_folder='C:/Users/paulvincentnonat/Documents/GitHub/weights/test'
-    # # -----ECSSD dataset-----
-    # train_path = os.path.join(data_root, 'ECSSD/images')
-    # label_path = os.path.join(data_root, 'ECSSD/ground_truth_mask')
-    #
-    # val_path = os.path.join(data_root, 'ECSSD/val_images')
-    # val_label = os.path.join(data_root, 'ECSSD/val_ground_truth_mask')
-    # test_path = os.path.join(data_root, 'ECSSD/test_images')
-    # test_label = os.path.join(data_root, 'ECSSD/test_ground_truth_mask')
-    # # -----MSRA-B dataset-----
 
     parser = argparse.ArgumentParser()
 

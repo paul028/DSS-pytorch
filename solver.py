@@ -162,9 +162,9 @@ class Solver(object):
                 print(prob_pred[0])
                 print(i)
                 for j in range(self.batch_size_val):
-                    plot_image(images[j], (224/120, 224/120), 'Input Image',True)
-                    plot_image(labels[j], (224/120, 224/120), 'Ground Truth')
-                    plot_image(prob_pred[j], (224/120, 224/120), 'Predicted Map')
+                    #plot_image(images[j], (224/120, 224/120), 'Input Image',True)
+                    #plot_image(labels[j], (224/120, 224/120), 'Ground Truth')
+                    #plot_image(prob_pred[j], (224/120, 224/120), 'Predicted Map')
                     save_image(images[j],result_dir+'input'+str(i+j)+'.png')
                     save_image(make_grid([labels[j],prob_pred[j]]),result_dir+'result'+str(i+j)+'.png')
                 prec, recall = self.prec_recall(prob_pred, labels, num)
