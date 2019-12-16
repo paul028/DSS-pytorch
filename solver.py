@@ -114,7 +114,7 @@ class Solver(object):
         return avg_mae / len(self.val_loader)
 
     # test phase: using origin image size, evaluate MAE and max F_beta metrics
-    def test(self, num, use_crf=False):
+    def test(self,num,output_path, use_crf=False):
         if use_crf: from tools.crf_process import crf
         avg_mae, img_num = 0.0, len(self.test_dataset)
         avg_prec, avg_recall = torch.zeros(num), torch.zeros(num)
@@ -136,7 +136,7 @@ class Solver(object):
                 ratio = 160/224*7
                 #plot_result.append(images[0])
                 #plot_result.append(labels[0])
-                result_dir='C:/Users/Paul Vincent Nonat/Documents/Graduate Student Files/Pascal Predicted Maps/'
+                result_dir=output_path
                 plot_image(images[0], (224/60, 224/60), 'Input Image',True)
                 plot_image(labels[0], (224/60, 224/60), 'Ground Truth')
                 plot_image(prob_pred[0], (224/60, 224/60), 'Predicted Map')
