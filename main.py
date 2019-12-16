@@ -15,7 +15,12 @@ from own_dataloader import ToTensor
 from own_dataloader import ToTensorLab
 from own_dataloader import SalObjDataset
 
-data_dir =   'C:/Users/tip/Documents/GitHub/Saliency_Dataset/dataset_test/DUTS-TE/'
+#data_dir =   'C:/Users/tip/Documents/GitHub/Saliency_Dataset/dataset_test/DUTOMRON/'
+#data_dir =   'C:/Users/tip/Documents/GitHub/Saliency_Dataset/dataset_test/DUTS-TE/'
+data_dir =   'C:/Users/tip/Documents/GitHub/Saliency_Dataset/dataset_test/ECSSD/'
+#data_dir =   'C:/Users/tip/Documents/GitHub/Saliency_Dataset/dataset_test/HKU-IS/'
+#data_dir =   'C:/Users/tip/Documents/GitHub/Saliency_Dataset/dataset_test/PASCALS/'
+#data_dir =   'C:/Users/tip/Documents/GitHub/Saliency_Dataset/dataset_test/SOD/'
 #tra_image_dir = 'DUTS-TR/DUTS-TR-Image/'
 #tra_label_dir = 'DUTS-TR/DUTS-TR-Mask/'
 test_image_dir = 'Imgs/'
@@ -27,23 +32,22 @@ batch_size_val=4
 image_ext = '.jpg'
 label_ext = '.png'
 
-vgg_path = 'D:/nonat project/Experiment 1.2/weights/vgg16_feat.pth'
-trained_model='D:/nonat project/Experiment 1.2/weights/Experiment1.2.pth'
+vgg_path = 'D:/nonat project/Experiment 1/weights/vgg16_feat.pth'
+trained_model='D:/nonat project/Experiment 1/weights/Experiment1.pth'
 
+#test_folder='D:/nonat project/Experiment 1/weights/test/DUTOMRON TEST'
+#test_folder='D:/nonat project/Experiment 1/weights/test/DUTS TEST'
+test_folder='D:/nonat project/Experiment 1/weights/test/ECCSD TEST'
+#test_folder='D:/nonat project/Experiment 1/weights/test/HKU-IS TEST'
+#test_folder='D:/nonat project/Experiment 1/weights/test/PASCAL TEST'
+#test_folder='D:/nonat project/Experiment 1/weights/test/SOD TEST'
 
-test_folder='D:/nonat project/Experiment 1.2/weights/test/DUTS TEST'
-#test_folder='D:/nonat project/Experiment 1.2/weights/test/DUTOMRON TEST'
-#test_folder='D:/nonat project/Experiment 1.2/weights/test/ECCSD TEST'
-#test_folder='D:/nonat project/Experiment 1.2/weights/test/HKU-IS TEST'
-#test_folder='D:/nonat project/Experiment 1.2/weights/test/PASCAL TEST'
-#test_folder='D:/nonat project/Experiment 1.2/weights/test/SOD TEST'
-
-#output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/DUTS OMRON Saliency Map Prediction'
-output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/DUTS Saliency Map Prediction/'
-#output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/ECCSD Saliency Map Prediction'
-#output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/HKU-IS Saliency Map Prediction'
-#output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/PASCAL Saliency Map Prediction'
-#output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/SOD Saliency Map Prediction'
+#output_path='D:/nonat project/Experiment 1/Experiment 1 Predictions/DUTS OMRON Saliency Map Prediction/'
+#output_path='D:/nonat project/Experiment 1/Experiment 1 Predictions/DUTS Saliency Map Prediction/'
+output_path='D:/nonat project/Experiment 1/Experiment 1 Predictions/ECCSD Saliency Map Prediction/'
+#output_path='D:/nonat project/Experiment 1/Experiment 1 Predictions/HKU-IS Saliency Map Prediction/'
+#output_path='D:/nonat project/Experiment 1/Experiment 1 Predictions/PASCAL Saliency Map Prediction/'
+#output_path='D:/nonat project/Experiment 1/Experiment 1 Predictions/SOD Saliency Map Prediction/'
 def main(config):
 
     if config.mode == 'train':
