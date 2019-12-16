@@ -9,7 +9,7 @@ from dssnet import build_model, weights_init
 from loss import Loss
 from tools.visual import Viz_visdom,plot_image, make_simple_grid
 from torch.autograd import Variable
-from torchvision.utils import save_image
+from torchvision.utils import save_image,make_grid
 
 import sys
 from PIL import Image
@@ -22,6 +22,7 @@ iou_loss = pytorch_iou.IOU(size_average=True)
 
 class Solver(object):
     def __init__(self, train_loader, val_loader, test_dataset, config):
+        self.batch_size_val= config.batch_size_val
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.test_dataset = test_dataset
@@ -82,6 +83,21 @@ class Solver(object):
 
     # TODO: write a more efficient version
     # get precisions and recalls: threshold---divided [0, 1] to num values
+    def prec_recall(self, y_pred, y_true, num):
+
+        tp = (y_true * y_pred).sum().to(torch.float32)
+        tn = ((1 - y_true) * (1 - y_pred)).sum().to(torch.float32)
+        fp = ((1 - y_true) * y_pred).sum().to(torch.float32)
+        fn = (y_true * (1 - y_pred)).sum().to(torch.float32)
+
+        epsilon = 1e-7
+
+        precision = tp / (tp + fp + epsilon)
+        recall = tp / (tp + fn + epsilon)
+
+
+        return precision,recall
+
     def eval_pr(self, y_pred, y, num):
         prec, recall = torch.zeros(num), torch.zeros(num)
         thlist = torch.linspace(0, 1 - 1e-10, num)
@@ -132,27 +148,35 @@ class Solver(object):
                 prob_pred = self.net(images)
 
                 prob_pred = torch.mean(torch.cat([prob_pred[i] for i in self.select], dim=1), dim=1, keepdim=True)
-                prob_pred = F.interpolate(prob_pred, size=shape, mode='bilinear', align_corners=True).cpu().data
+
+                if use_crf:
+                    prob_pred = crf(img, prob_pred.numpy(), to_tensor=True)
+                mae = self.eval_mae(prob_pred, labels)  .item()
+
+                prob_pred = F.interpolate(prob_pred, size=shape, mode='bilinear', align_corners=True)
                 ratio = 160/224*7
                 #plot_result.append(images[0])
                 #plot_result.append(labels[0])
                 result_dir=output_path
-                plot_image(images[0], (224/60, 224/60), 'Input Image',True)
-                plot_image(labels[0], (224/60, 224/60), 'Ground Truth')
-                plot_image(prob_pred[0], (224/60, 224/60), 'Predicted Map')
+                #plot_image(prob_pred[0], (224/60, 224/60), 'Predicted Map')
+                print(prob_pred[0])
+                print(i)
+                for j in range(self.batch_size_val):
+                    plot_image(images[j], (224/120, 224/120), 'Input Image',True)
+                    plot_image(labels[j], (224/120, 224/120), 'Ground Truth')
+                    plot_image(prob_pred[j], (224/120, 224/120), 'Predicted Map')
+                    save_image(images[j],result_dir+'input'+str(i+j)+'.png')
+                    save_image(make_grid([labels[j],prob_pred[j]]),result_dir+'result'+str(i+j)+'.png')
+                prec, recall = self.prec_recall(prob_pred, labels, num)
 
-                save_image(prob_pred,result_dir+'result'+str(i)+'.png')
-
-                if use_crf:
-                    prob_pred = crf(img, prob_pred.numpy(), to_tensor=True)
-                mae = self.eval_mae(prob_pred, labels)
-                prec, recall = self.eval_pr(prob_pred, labels, num)
-                print(num)
+                #print(num)
                 print("[%d] mae: %.4f" % (i, mae))
                 print("[%d] mae: %.4f" % (i, mae), file=self.test_output)
                 avg_mae += mae
                 avg_prec, avg_recall = avg_prec + prec, avg_recall + recall
+
         avg_mae, avg_prec, avg_recall = avg_mae / img_num, avg_prec / img_num, avg_recall / img_num
+
         score = (1 + self.beta ** 2) * avg_prec * avg_recall / (self.beta ** 2 * avg_prec + avg_recall)
         score[score != score] = 0  # delete the nan
         print('average mae: %.4f, max fmeasure: %.4f' % (avg_mae, score.max()))

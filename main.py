@@ -15,18 +15,18 @@ from own_dataloader import ToTensor
 from own_dataloader import ToTensorLab
 from own_dataloader import SalObjDataset
 
-data_dir =   'C:/Users/tip/Documents/GitHub/Saliency_Dataset/DUTS/'
+data_dir =   'C:/Users/paulvincentnonat/Documents/GitHub/Saliency_Dataset/DUTS/'
 tra_image_dir = 'DUTS-TR/DUTS-TR-Image/'
 tra_label_dir = 'DUTS-TR/DUTS-TR-Mask/'
 test_image_dir = 'DUTS-TE/DUTS-TE-Image/'
 test_label_dir = 'DUTS-TE/DUTS-TE-Mask/'
 enableInpaintAug = False
 batch_size_train=32
-batch_size_val=1
+batch_size_val=4
 
 image_ext = '.jpg'
 label_ext = '.png'
-
+output_path='C:/Users/paulvincentnonat/Documents/GitHub/Experiment 1 DUTS Saliency Map/'
 def main(config):
     tra_img_name_list = glob.glob(data_dir + tra_image_dir + '*' + image_ext)
     print("data_dir + tra_image_dir + '*' + image_ext: ", data_dir + tra_image_dir + '*' + image_ext)
@@ -105,14 +105,16 @@ def main(config):
         test_loader = DataLoader(salobj_dataset_test, batch_size=batch_size_val, shuffle=True, num_workers=1)
         if not os.path.exists(config.test_fold): os.mkdir(config.test_fold)
         test = Solver(None, None, test_loader, config)
-        test.test(100, use_crf=config.use_crf)
+        test.test(100,output_path, use_crf=config.use_crf)
     else:
         raise IOError("illegal input!!!")
 
 
 if __name__ == '__main__':
     data_root = os.path.join(os.path.expanduser('~'), 'data')
-    vgg_path = './weights/vgg16_feat.pth'
+    vgg_path = 'C:/Users/paulvincentnonat/Documents/GitHub/weights/vgg16_feat.pth'
+    trained_model='C:/Users/paulvincentnonat/Documents/GitHub/weights/Experiment1.pth'
+    test_folder='C:/Users/paulvincentnonat/Documents/GitHub/weights/test'
     # # -----ECSSD dataset-----
     # train_path = os.path.join(data_root, 'ECSSD/images')
     # label_path = os.path.join(data_root, 'ECSSD/ground_truth_mask')
@@ -148,7 +150,7 @@ if __name__ == '__main__':
     parser.add_argument('--pre_trained', type=str, default=None)
 
     # Testing settings
-    parser.add_argument('--model', type=str, default='./weights/final.pth')
+    parser.add_argument('--model', type=str, default=trained_model)
     parser.add_argument('--test_fold', type=str, default='./results/test')
     parser.add_argument('--use_crf', type=bool, default=False)
 
