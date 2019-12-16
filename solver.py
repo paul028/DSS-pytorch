@@ -135,6 +135,7 @@ class Solver(object):
         avg_mae, img_num = 0.0, len(self.test_dataset)
         avg_prec, avg_recall = torch.zeros(num), torch.zeros(num)
         with torch.no_grad():
+            counter=0
             for i,data in enumerate(self.test_dataset): #(img, labels) in enumerate(self.test_dataset):
                 images,labels = data['image'], data['label']
                 images = images.type(torch.cuda. FloatTensor)
@@ -159,14 +160,15 @@ class Solver(object):
                 #plot_result.append(labels[0])
                 result_dir=output_path
                 #plot_image(prob_pred[0], (224/60, 224/60), 'Predicted Map')
-                print(prob_pred[0])
-                print(i)
-                for j in range(self.batch_size_val):
-                    #plot_image(images[j], (224/120, 224/120), 'Input Image',True)
-                    #plot_image(labels[j], (224/120, 224/120), 'Ground Truth')
-                    #plot_image(prob_pred[j], (224/120, 224/120), 'Predicted Map')
-                    save_image(images[j],result_dir+'input'+str(i+j)+'.png')
-                    save_image(make_grid([labels[j],prob_pred[j]]),result_dir+'result'+str(i+j)+'.png')
+                print(images.size()[0])
+                for j in range(images.size()[0]):
+                    print(counter)
+                #    plot_image(images[j], (224/120, 224/120), 'Input Image',True)
+                #    plot_image(labels[j], (224/120, 224/120), 'Ground Truth')
+                #    plot_image(prob_pred[j], (224/120, 224/120), 'Predicted Map')
+                    save_image(images[j],result_dir+'input'+str(counter)+'.jpg')
+                    save_image(make_grid([labels[j],prob_pred[j]]),result_dir+'result'+str(counter)+'.png')
+                    counter = counter +1
                 prec, recall = self.prec_recall(prob_pred, labels, num)
 
                 #print(num)

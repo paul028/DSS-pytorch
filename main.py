@@ -15,11 +15,11 @@ from own_dataloader import ToTensor
 from own_dataloader import ToTensorLab
 from own_dataloader import SalObjDataset
 
-data_dir =   'C:/Users/paulvincentnonat/Documents/GitHub/Saliency_Dataset/DUTS/'
+data_dir =   'C:/Users/tip/Documents/GitHub/Saliency_Dataset/dataset_test/DUTS-TE/'
 #tra_image_dir = 'DUTS-TR/DUTS-TR-Image/'
 #tra_label_dir = 'DUTS-TR/DUTS-TR-Mask/'
-test_image_dir = 'DUTS-TE/DUTS-TE-Image/'
-test_label_dir = 'DUTS-TE/DUTS-TE-Mask/'
+test_image_dir = 'Imgs/'
+test_label_dir = 'gt/'
 enableInpaintAug = False
 batch_size_train=32
 batch_size_val=4
@@ -27,8 +27,8 @@ batch_size_val=4
 image_ext = '.jpg'
 label_ext = '.png'
 
-vgg_path = 'C:/Users/paulvincentnonat/Documents/GitHub/weights/vgg16_feat.pth'
-trained_model='C:/Users/paulvincentnonat/Documents/GitHub/weights/Experiment1.pth'
+vgg_path = 'D:/nonat project/Experiment 1.2/weights/vgg16_feat.pth'
+trained_model='D:/nonat project/Experiment 1.2/weights/Experiment1.2.pth'
 
 
 test_folder='D:/nonat project/Experiment 1.2/weights/test/DUTS TEST'
@@ -38,8 +38,8 @@ test_folder='D:/nonat project/Experiment 1.2/weights/test/DUTS TEST'
 #test_folder='D:/nonat project/Experiment 1.2/weights/test/PASCAL TEST'
 #test_folder='D:/nonat project/Experiment 1.2/weights/test/SOD TEST'
 
-output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/DUTS OMRON Saliency Map Prediction'
-#output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/DUTS Saliency Map Prediction'
+#output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/DUTS OMRON Saliency Map Prediction'
+output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/DUTS Saliency Map Prediction/'
 #output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/ECCSD Saliency Map Prediction'
 #output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/HKU-IS Saliency Map Prediction'
 #output_path='D:/nonat project/Experiment 1.2/Experiment 1.2 Predictions/PASCAL Saliency Map Prediction'
@@ -60,20 +60,21 @@ def main(config):
         		imidx = imidx + "." + bbb[i]
         	tra_lbl_name_list.append(data_dir + tra_label_dir + imidx + label_ext)
 
-            print("---")
-            print("train images: ", len(tra_img_name_list))
-            print("train labels: ", len(tra_lbl_name_list))
-            print("---")
-            train_num = len(tra_img_name_list)
-            salobj_dataset = SalObjDataset(
-                img_name_list=tra_img_name_list,
-                lbl_name_list=tra_lbl_name_list,
-                transform=transforms.Compose([
-                    RescaleT(256),
-                    RandomCrop(224),
-                    ToTensorLab(flag=0)]),
-            		category="train",
-            		enableInpaintAug=enableInpaintAug)
+        print("---")
+        print("train images: ", len(tra_img_name_list))
+        print("train labels: ", len(tra_lbl_name_list))
+        print("---")
+
+        train_num = len(tra_img_name_list)
+        salobj_dataset = SalObjDataset(
+            img_name_list=tra_img_name_list,
+            lbl_name_list=tra_lbl_name_list,
+            transform=transforms.Compose([
+                RescaleT(256),
+                RandomCrop(224),
+                ToTensorLab(flag=0)]),
+        		category="train",
+        		enableInpaintAug=enableInpaintAug)
 
     test_img_name_list = glob.glob(data_dir + test_image_dir + '*' + image_ext)
     print("data_dir + test_image_dir + '*' + image_ext: ", data_dir + test_image_dir + '*' + image_ext)
