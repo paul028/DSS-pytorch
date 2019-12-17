@@ -1,11 +1,9 @@
 import argparse
 import os
-#from dataset import get_loader
 from solver import Solver
 import glob
 from torchvision import transforms, utils
 import torchvision.transforms as standard_transforms
-
 from torch.utils.data import Dataset, DataLoader
 from own_dataloader import Rescale
 from own_dataloader import RescaleT
